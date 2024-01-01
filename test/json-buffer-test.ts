@@ -1,14 +1,17 @@
 
-var test = require('tape')
-var _JSON = require('../')
+import * as _JSON from '../mod.ts';
+
+import { assertEquals } from "https://deno.land/std@0.210.0/assert/mod.ts";
+
+declare var Deno;
 
 function clone (o) {
   return JSON.parse(JSON.stringify(o))
 }
 
 var examples = {
-  simple: { foo: [], bar: {}, baz: Buffer.from('some binary data') },
-  just_buffer: Buffer.from('JUST A BUFFER'),
+  simple: { foo: [], bar: {}, baz: new Deno.Buffer('some binary data') },
+  just_buffer: new Deno.Buffer('JUST A BUFFER'),
   all_types: {
     string:'hello',
     number: 3145,
@@ -18,15 +21,15 @@ var examples = {
     boolean: true,
     boolean2: false
   },
-  foo: Buffer.from('foo'),
-  foo2: Buffer.from('foo2'),
+  foo: new Deno.Buffer('foo'),
+  foo2: new Deno.Buffer('foo2'),
   escape: {
-    buffer: Buffer.from('x'),
-    string: _JSON.stringify(Buffer.from('x'))
+    buffer: new Deno.Buffer('x'),
+    string: _JSON.stringify(new Deno.Buffer('x'))
   },
   escape2: {
-    buffer: Buffer.from('x'),
-    string: ':base64:'+ Buffer.from('x').toString('base64')
+    buffer: new Deno.Buffer('x'),
+    string: ':base64:'+ new Deno.Buffer('x').toString('base64')
   },
   undefined: {
     empty: undefined, test: true
@@ -39,23 +42,21 @@ var examples = {
   },
   fn: {
     fn: function () {}    
-  },
-  undefined: undefined
+  }
 }
 
-for(k in examples)
+for(const k in examples)
 (function (value, k) { 
-  test(k, function (t) {
+Deno.test(k, function () {
     var s = _JSON.stringify(value)
     console.log('parse', s)
     if(JSON.stringify(value) !== undefined) {
       console.log(s)
       var _value = _JSON.parse(s)
-      t.deepEqual(clone(_value), clone(value))
+      assertEquals(clone(_value), clone(value))
     }
     else
-      t.equal(s, undefined)
-    t.end()
+      assertEquals(s, undefined)
   })
 })(examples[k], k)
 
